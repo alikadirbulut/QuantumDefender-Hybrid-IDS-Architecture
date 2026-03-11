@@ -1,0 +1,7 @@
+{
+  "CLOUD_URL": "http://127.0.0.1:5000/analyze",
+  "ENABLE_FIREWALL_BLOCK": true,
+  "BATCH_SIZE": 20,
+  "SEND_INTERVAL": 10.0,
+  "FILTER": "(tcp.DstPort == 80 or tcp.DstPort == 443 or tcp.SrcPort == 80 or tcp.SrcPort == 443)"
+}

@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumDefender Cloud v8.0 — Next-Gen SOC Dashboard</title>
+
+<!-- Libraries -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+
+<style>
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #0f1624;
+  --bg-glass: rgba(15, 22, 36, 0.7);
+  --bg-glass-hover: rgba(15, 22, 36, 0.9);
+  --border-primary: rgba(0, 255, 224, 0.2);
+  --border-secondary: rgba(124, 111, 255, 0.2);
+  --text-primary: #e8f0ff;
+  --text-secondary: #9fb3c8;
+  --accent-cyan: #00ffe0;
+  --accent-purple: #7c6fff;
+  --accent-pink: #ff5c8a;
+  --success: #00e676;
+  --warning: #ffd54f;
+  --danger: #ff5252;
+  --gradient-1: linear-gradient(135deg, rgba(0,255,224,0.1) 0%, rgba(124,111,255,0.1) 100%);
+  --gradient-2: linear-gradient(135deg, rgba(124,111,255,0.15) 0%, rgba(255,92,138,0.15) 100%);
+  --shadow-glow: 0 0 30px rgba(0,255,224,0.15);
+  --shadow-card: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0,255,224,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(124,111,255,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255,92,138,0.05) 0%, transparent 70%),
+    var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body.light-theme {
+  --bg-primary: #f5f7fb;
+  --bg-secondary: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.9);
+  --bg-glass-hover: rgba(245, 247, 251, 0.95);
+  --border-primary: rgba(15, 23, 42, 0.08);
+  --border-secondary: rgba(79, 70, 229, 0.18);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent-cyan: #0891b2;
+  --accent-purple: #4f46e5;
+  --accent-pink: #db2777;
+  --success: #16a34a;
+  --warning: #eab308;
+  --danger: #dc2626;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(0,255,224,0.03) 0%, rgba(124,111,255,0.03) 50%, rgba(0,255,224,0.03) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,224,0.02) 2px, rgba(0,255,224,0.02) 4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Animated background particles */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, rgba(0,255,224,0.3), transparent),
+    radial-gradient(2px 2px at 60% 70%, rgba(124,111,255,0.3), transparent),
+    radial-gradient(1px 1px at 50% 50%, rgba(255,92,138,0.2), transparent);
+  background-size: 200% 200%;
+  animation: particleMove 20s ease infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes particleMove {
+  0%, 100% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+  50% { background-position: 100% 100%, 0% 0%, 50% 50%; }
+}
+
+/* Topbar - Glassmorphism */
+.topbar {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+.topbar:hover {
+  box-shadow: 0 12px 48px rgba(0,0,0,0.4);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-shadow: 0 0 20px rgba(0,255,224,0.3);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-toggle {
+  display: none;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  background: rgba(10,14,26,0.85);
+  color: var(--accent-cyan);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.sidebar-toggle:hover {
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+.topbar h1 i {
+  font-size: 28px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.topbar-metrics {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.pill {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.pill.ok {
+  color: var(--success);
+  border-color: rgba(0,230,118,0.4);
+  box-shadow: 0 0 15px rgba(0,230,118,0.2);
+}
+
+.pill.warn {
+  color: var(--danger);
+  border-color: rgba(255,82,82,0.4);
+  box-shadow: 0 0 15px rgba(255,82,82,0.2);
+}
+
+.metric-card {
+  background: var(--gradient-1);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  padding: 12px 20px;
+  min-width: 120px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--accent-cyan);
+}
+
+.metric-card .value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metric-card .label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.metric-card.danger .value { color: var(--danger); }
+.metric-card.success .value { color: var(--success); }
+.metric-card.warning .value { color: var(--warning); }
+
+/* Sidebar - Modern Glass */
+.sidebar {
+  position: fixed;
+  top: 80px;
+  left: 0;
+  width: 260px;
+  height: calc(100vh - 80px);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid var(--border-primary);
+  padding: 24px 0;
+  box-shadow: 10px 0 40px rgba(0,0,0,0.3);
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 3px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  padding: 14px 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  font-size: 14px;
+  margin: 4px 12px;
+  border-radius: 12px;
+}
+
+.sidebar li i {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.sidebar li:hover {
+  background: var(--bg-glass-hover);
+  transform: translateX(4px);
+  color: var(--text-primary);
+  border-left-color: var(--accent-purple);
+}
+
+.sidebar li.active {
+  color: var(--accent-cyan);
+  background: var(--gradient-1);
+  border-left-color: var(--accent-cyan);
+  box-shadow: 0 4px 20px rgba(0,255,224,0.15);
+}
+
+/* Main Content */
+main {
+  margin-left: 280px;
+  padding: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Glass Cards */
+.card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 20px;
+  border: 1px solid var(--border-primary);
+  padding: 24px;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gradient-1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  border-color: var(--accent-cyan);
+}
+
+.card h4, .card h5 {
+  margin-bottom: 20px;
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+}
+
+.card h4 i, .card h5 i {
+  color: var(--accent-cyan);
+}
+
+/* DataTable Styling */
+#eventsTable {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+#eventsTable thead th {
+  background: var(--bg-glass);
+  color: var(--accent-cyan);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 16px 12px;
+  border-bottom: 2px solid var(--border-primary);
+}
+
+#eventsTable tbody td {
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: var(--text-primary);
+}
+
+#eventsTable tbody tr {
+  transition: all 0.2s ease;
+}
+
+#eventsTable tbody tr:hover {
+  background: var(--bg-glass-hover);
+  transform: scale(1.01);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,255,224,0.1);
+}
+
+#eventsTable tbody tr.table-danger {
+  background: rgba(255,82,82,0.1);
+  border-left: 3px solid var(--danger);
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge.bg-danger {
+  background: rgba(255,82,82,0.2) !important;
+  color: var(--danger) !important;
+  border: 1px solid rgba(255,82,82,0.4);
+}
+
+.badge.bg-success {
+  background: rgba(0,230,118,0.2) !important;
+  color: var(--success) !important;
+  border: 1px solid rgba(0,230,118,0.4);
+}
+
+.badge.bg-primary {
+  background: rgba(124,111,255,0.2) !important;
+  color: var(--accent-purple) !important;
+  border: 1px solid rgba(124,111,255,0.4);
+}
+
+/* Signature Cards */
+.signature-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-left: 4px solid var(--success);
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.signature-card:hover {
+  transform: translateY(-4px) translateX(4px);
+  box-shadow: var(--shadow-card);
+  border-color: var(--accent-cyan);
+}
+
+.signature-card[data-severity="High"] { border-left-color: var(--danger); }
+.signature-card[data-severity="Medium"] { border-left-color: var(--warning); }
+.signature-card[data-severity="Low"] { border-left-color: var(--success); }
+
+.signature-card h6 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.signature-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 8px;
+}
+
+/* Threat Intel Cards */
+.threat-card {
+  background: var(--gradient-2);
+  border: 1px solid var(--border-secondary);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.threat-card:hover {
+  transform: translateX(8px);
+  box-shadow: 0 8px 24px rgba(255,92,138,0.2);
+}
+
+.threat-card .threat-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.threat-card .threat-count {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-pink);
+}
+
+/* Agent Cards */
+.agent-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.agent-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--accent-cyan);
+}
+
+.agent-card.active {
+  border-color: var(--success);
+  box-shadow: 0 0 20px rgba(0,230,118,0.2);
+}
+
+.agent-card.active::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 10px;
+  height: 10px;
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--success);
+}
+
+.agent-card.inactive {
+  border-color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.agent-card code {
+  background: rgba(0,255,224,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--accent-cyan);
+}
+
+/* View Sections */
+.view-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-section:not(.hidden) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hidden {
+  display: none;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-outline-info {
+  background: transparent;
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.btn-outline-info:hover {
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,255,224,0.3);
+}
+
+.btn-info {
+  background: var(--gradient-1);
+  border: 1px solid var(--accent-cyan);
+  color: var(--text-primary);
+}
+
+.btn-info:hover {
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Modal */
+.modal-content {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  color: var(--text-primary);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.modal-body {
+  color: var(--text-primary);
+}
+
+.form-control, .form-select {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+
+.form-control:focus, .form-select:focus {
+  background: var(--bg-glass-hover);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(0,255,224,0.2);
+  color: var(--text-primary);
+}
+
+/* Toast Notifications */
+.toast {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+}
+
+.toast-header {
+  background: var(--gradient-2);
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* Map Container */
+.map-container {
+  height: 400px;
+  background: var(--bg-glass);
+  border-radius: 16px;
+  border: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-container::before {
+  content: "🌍";
+  font-size: 120px;
+  opacity: 0.1;
+  position: absolute;
+}
+
+/* Loading Animation */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--border-primary);
+  border-radius: 50%;
+  border-top-color: var(--accent-cyan);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  main {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .topbar-metrics {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="sidebar-toggle d-md-none" id="sidebarToggle" aria-label="Toggle navigation">
+      <i class="bi bi-list"></i>
+    </button>
+    <h1><i class="bi bi-shield-lock-fill"></i> QuantumDefender Cloud v9.0</h1>
+  </div>
+  <div class="topbar-metrics">
+    <span class="pill ok" id="cloudStatus">Cloud: Ready</span>
+    <div class="metric-card">
+      <div class="value" id="totalEvents">0</div>
+      <div class="label">Events</div>
+    </div>
+    <div class="metric-card danger">
+      <div class="value" id="totalAlerts">0</div>
+      <div class="label">Alerts</div>
+    </div>
+    <div class="metric-card success">
+      <div class="value" id="uniqueAgents">0</div>
+      <div class="label">Agents</div>
+    </div>
+    <div class="metric-card warning">
+      <div class="value" id="uptime">0h</div>
+      <div class="label">Uptime</div>
+    </div>
+    <button class="btn btn-sm btn-outline-info" id="themeToggle" type="button">
+      <i class="bi bi-moon-stars" id="themeToggleIcon"></i>
+    </button>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <ul>
+    <li class="active" data-view="feed"><i class="bi bi-lightning-charge-fill"></i> Live Feed</li>
+    <li data-view="analytics"><i class="bi bi-graph-up-arrow"></i> Analytics</li>
+    <li data-view="connections"><i class="bi bi-diagram-3"></i> Connections</li>
+    <li data-view="threats"><i class="bi bi-shield-exclamation"></i> Threat Intel</li>
+    <li data-view="firewall"><i class="bi bi-shield-lock"></i> Firewall</li>
+    <li data-view="agents"><i class="bi bi-cpu-fill"></i> Agents</li>
+    <li data-view="signatures"><i class="bi bi-fingerprint"></i> Signatures</li>
+    <li data-view="devices"><i class="bi bi-laptop"></i> Device Management</li>
+    <li data-view="automation"><i class="bi bi-robot"></i> Automation</li>
+    <li data-view="map"><i class="bi bi-geo-alt-fill"></i> Geo Map</li>
+    <li data-view="export"><i class="bi bi-download"></i> Export Data</li>
+  </ul>
+</aside>
+
+<main>
+  <!-- Live Feed -->
+  <section id="view-feed" class="view-section">
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0"><i class="bi bi-lightning-charge-fill"></i> Live Event Feed</h4>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-info" id="btnFilterAlerts">
+            <i class="bi bi-funnel"></i> Filter Alerts
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnClearFeed">
+            <i class="bi bi-x-circle"></i> Clear
+          </button>
+          <span class="pill" id="ingestPill">Ingest: Active</span>
+      </div>
+      </div>
+      <div class="table-responsive">
+      <table id="eventsTable" class="display cell-border stripe" width="100%">
+        <thead>
+          <tr>
+              <th>Time</th>
+              <th>Agent</th>
+              <th>Host</th>
+              <th>Connection</th>
+              <th>Protocol</th>
+              <th>Bytes</th>
+              <th>Region</th>
+              <th>URL</th>
+              <th>Score</th>
+              <th>Source</th>
+              <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analytics -->
+  <section id="view-analytics" class="view-section hidden">
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <h4 class="mb-1"><i class="bi bi-graph-up-arrow"></i> Advanced Analytics Dashboard</h4>
+          <small class="text-muted">End‑to‑end visibility across all QuantumDefender agents and cloud detections.</small>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="pill" id="analyticsRangePill">
+            <i class="bi bi-clock"></i> Range
+          </span>
+          <select id="analyticsTimeRange" class="form-select form-select-sm" style="width: auto;">
+            <option value="1h">Last Hour</option>
+            <option value="6h">Last 6 Hours</option>
+            <option value="24h" selected>Last 24 Hours</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+          </select>
+          <select id="analyticsAgentFilter" class="form-select form-select-sm" style="width: auto;">
+            <option value="all">All Agents</option>
+          </select>
+          <button class="btn btn-sm btn-outline-info" id="btnRefreshAnalytics">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnExportAnalytics">
+            <i class="bi bi-download"></i> Export
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mb-3 g-3">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2 text-uppercase small">Total Events</h6>
+          <h3 id="analyticsTotalEvents" class="text-info mb-0">0</h3>
+          <small class="text-muted d-block mt-1" id="analyticsEventsChange">+0%</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2 text-uppercase small">Total Alerts</h6>
+          <h3 id="analyticsTotalAlerts" class="text-danger mb-0">0</h3>
+          <small class="text-muted d-block mt-1" id="analyticsAlertsChange">+0%</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2 text-uppercase small">Avg Threat Score</h6>
+          <h3 id="analyticsAvgScore" class="text-warning mb-0">0.0</h3>
+          <small class="text-muted d-block mt-1" id="analyticsScoreChange">+0%</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2 text-uppercase small">Unique IPs</h6>
+          <h3 id="analyticsUniqueIPs" class="text-success mb-0">0</h3>
+          <small class="text-muted d-block mt-1" id="analyticsIPsChange">+0%</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <h5><i class="bi bi-activity"></i> Events / Hour</h5>
+          <canvas id="eventsChart" height="220"></canvas>
+        </div>
+      </div>
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <h5><i class="bi bi-exclamation-triangle-fill"></i> Alerts Over Time</h5>
+          <canvas id="alertsChart" height="220"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-3 g-3">
+      <div class="col-lg-4">
+        <div class="card h-100">
+          <h5><i class="bi bi-shuffle"></i> Detection Sources</h5>
+          <canvas id="sourceChart" height="190"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card h-100">
+          <h5><i class="bi bi-diagram-3"></i> Protocol Distribution</h5>
+          <canvas id="protoChart" height="190"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card h-100">
+          <h5><i class="bi bi-pie-chart-fill"></i> Threat Distribution</h5>
+          <canvas id="threatChart" height="190"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion mt-3" id="analyticsAdvancedAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="analyticsAdvancedHeading">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#analyticsAdvancedBody" aria-expanded="false" aria-controls="analyticsAdvancedBody">
+            Advanced analytics (agents, ML & integrations)
+          </button>
+        </h2>
+        <div id="analyticsAdvancedBody" class="accordion-collapse collapse" aria-labelledby="analyticsAdvancedHeading" data-bs-parent="#analyticsAdvancedAccordion">
+          <div class="accordion-body">
+            <div class="row mt-2 g-3">
+              <div class="col-xl-7">
+                <div class="card h-100">
+                  <h5><i class="bi bi-cpu"></i> Agent Activity</h5>
+                  <canvas id="agentChart" height="260"></canvas>
+                </div>
+              </div>
+              <div class="col-xl-5">
+                <div class="card h-100">
+                  <h5><i class="bi bi-clock-history"></i> Peak Activity & Top Destinations</h5>
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <canvas id="peakActivityChart" height="180"></canvas>
+                    </div>
+                    <div class="col-12">
+                      <div id="topDestinations" class="mt-1">
+                        <p class="text-muted text-center">Loading...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-3 g-3">
+              <div class="col-lg-6">
+                <div class="card h-100">
+                  <h5><i class="bi bi-robot"></i> ML Feedback & Signature Generation</h5>
+                  <div class="row text-center">
+                    <div class="col-6 col-md-3 mb-3">
+                      <div class="small text-muted text-uppercase">ML Detections</div>
+                      <div id="mlDetections" class="h4 mb-0">0</div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                      <div class="small text-muted text-uppercase">ML Signatures</div>
+                      <div id="mlGeneratedSigs" class="h4 mb-0">0</div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                      <div class="small text-muted text-uppercase">3rd‑Party Sigs</div>
+                      <div id="thirdPartySigs" class="h4 mb-0">0</div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                      <div class="small text-muted text-uppercase">Patterns in Queue</div>
+                      <div id="mlPatternsInQueue" class="h4 mb-0">0</div>
+                    </div>
+                  </div>
+                  <div class="mt-2">
+                    <span class="badge bg-secondary" id="mlFeedbackStatus">ML Feedback: Loading...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card h-100">
+                  <h5><i class="bi bi-plug"></i> Threat Intelligence Integrations</h5>
+                  <div class="row g-2">
+                    <div class="col-12 col-md-4">
+                      <div class="d-flex align-items-center justify-content-between">
+                        <span class="small text-muted">AbuseIPDB</span>
+                        <span id="tpAbuseipdb" class="badge bg-secondary">Checking...</span>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <div class="d-flex align-items-center justify-content-between">
+                        <span class="small text-muted">VirusTotal</span>
+                        <span id="tpVirustotal" class="badge bg-secondary">Checking...</span>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <div class="d-flex align-items-center justify-content-between">
+                        <span class="small text-muted">AlienVault</span>
+                        <span id="tpAlienvault" class="badge bg-secondary">Checking...</span>
+                      </div>
+                    </div>
+                  </div>
+                  <small class="text-muted d-block mt-2">Status reflects live configuration from the cloud backend.</small>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Threat Intel -->
+  <section id="view-threats" class="view-section hidden">
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h4 class="mb-1"><i class="bi bi-shield-exclamation"></i> Threat Intelligence Center</h4>
+          <small class="text-muted">Correlated insight across IPs, URLs and detection sources, backed by live agent telemetry.</small>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <input type="text" id="threatSearchInput" class="form-control form-control-sm" placeholder="Search IP, URL, or threat..." style="width: 260px;">
+          <button class="btn btn-sm btn-outline-info" id="btnCheckThreat">
+            <i class="bi bi-search"></i> Check IP / URL
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnRefreshThreats">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnExportThreats">
+            <i class="bi bi-download"></i> Export
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3 g-3">
+      <div class="col-md-4">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2"><i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> Critical Threats</h6>
+          <h3 id="threatCritical" class="text-danger mb-0">0</h3>
+          <small class="text-muted d-block mt-1">High severity alerts across all agents</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2"><i class="bi bi-shield-fill-exclamation text-warning me-1"></i> Active Malicious IPs</h6>
+          <h3 id="threatActiveIPs" class="text-warning mb-0">0</h3>
+          <small class="text-muted d-block mt-1">IPs currently involved in alerts</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2"><i class="bi bi-link-45deg text-info me-1"></i> Suspicious URLs</h6>
+          <h3 id="threatSuspiciousURLs" class="text-info mb-0">0</h3>
+          <small class="text-muted d-block mt-1">Domains flagged by detections</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" data-bs-toggle="tab" href="#threatOverview">
+            <i class="bi bi-list-ul me-1"></i> Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#threatIPs">
+            <i class="bi bi-hdd-network me-1"></i> Malicious IPs
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#threatURLs">
+            <i class="bi bi-link-45deg me-1"></i> Suspicious URLs
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#threatPatterns">
+            <i class="bi bi-fingerprint me-1"></i> Threat Patterns
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#threatHistory">
+            <i class="bi bi-clock-history me-1"></i> History
+          </a>
+        </li>
+      </ul>
+      <div class="tab-content p-3">
+        <div id="threatOverview" class="tab-pane fade show active">
+          <div id="threatList" class="row">
+            <!-- Threat cards will be inserted here -->
+          </div>
+        </div>
+        <div id="threatIPs" class="tab-pane fade">
+          <div id="threatIPList" class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>IP Address</th>
+                  <th>Threat Count</th>
+                  <th>Threat Level</th>
+                  <th>First Seen</th>
+                  <th>Last Seen</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="threatIPTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="threatURLs" class="tab-pane fade">
+          <div id="threatURLList" class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>URL</th>
+                  <th>Threat Count</th>
+                  <th>Threat Level</th>
+                  <th>First Seen</th>
+                  <th>Last Seen</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="threatURLTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="threatPatterns" class="tab-pane fade">
+          <div id="threatPatternList" class="row">
+            <!-- Pattern cards will be inserted here -->
+          </div>
+        </div>
+        <div id="threatHistory" class="tab-pane fade">
+          <div class="card mb-3">
+            <h5><i class="bi bi-activity"></i> Threat Timeline (Last 24 Hours)</h5>
+            <canvas id="threatTimelineChart" height="120"></canvas>
+          </div>
+          <div id="threatHistoryList" class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Threat</th>
+                  <th>IP</th>
+                  <th>Agent</th>
+                  <th>Score</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="threatHistoryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Firewall -->
+  <section id="view-firewall" class="view-section hidden">
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h4 class="mb-0"><i class="bi bi-shield-lock"></i> Central Firewall Control</h4>
+        <small class="text-muted">Manage IP / domain / CIDR blocks pushed down to QuantumDefender agents.</small>
+      </div>
+    </div>
+
+    <div class="row mb-3 g-3">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Total Rules</h6>
+          <h3 id="fwTotalRules" class="text-info mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Blocked IPs</h6>
+          <h3 id="fwTotalIps" class="text-danger mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Blocked Domains</h6>
+          <h3 id="fwTotalDomains" class="text-warning mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Blocked CIDRs</h6>
+          <h3 id="fwTotalCidrs" class="text-success mb-0">0</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add Firewall Rule</h5>
+      </div>
+      <form id="fwAddForm" class="row g-3 align-items-end">
+        <div class="col-md-2">
+          <label class="form-label mb-1">Type</label>
+          <select id="fwRuleType" class="form-select form-select-sm">
+            <option value="ip">IP Address</option>
+            <option value="domain">Domain</option>
+            <option value="cidr">CIDR / Subnet</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label mb-1">Value</label>
+          <input type="text" id="fwRuleValue" class="form-control form-control-sm" placeholder="e.g. 1.2.3.4 or example.com or 10.0.0.0/24" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1">Port (optional)</label>
+          <input type="number" id="fwRulePort" class="form-control form-control-sm" min="1" max="65535" placeholder="Any">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label mb-1">Action</label>
+          <select id="fwRuleAction" class="form-select form-select-sm">
+            <option value="drop" selected>Drop (hard block)</option>
+            <option value="page">Block with page</option>
+            <option value="allow">Allow (override)</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1">Scope</label>
+          <input type="text" id="fwRuleScope" class="form-control form-control-sm" placeholder="all or agent_id (optional)">
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-sm btn-info w-100">
+            <i class="bi bi-plus-circle"></i> Add
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="bi bi-list-check"></i> Active Firewall Rules</h5>
+        <small class="text-muted">Rules are kept in memory by the cloud and pushed to connected agents.</small>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Scope</th>
+              <th>Action</th>
+              <th>Type</th>
+              <th>Value</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="fwRulesTableBody">
+            <tr><td colspan="4" class="text-center text-muted">No firewall rules configured.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agents -->
+  <section id="view-agents" class="view-section hidden">
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h4 class="mb-0"><i class="bi bi-cpu-fill"></i> Agent Management & Monitoring</h4>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-warning" id="btnBulkAgentAction">
+            <i class="bi bi-list-check"></i> Bulk Actions
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnExportAgents">
+            <i class="bi bi-download"></i> Export
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnRefreshAgents">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Total Agents</h6>
+          <h3 id="agentsTotal" class="text-info mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Online</h6>
+          <h3 id="agentsOnline" class="text-success mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Offline</h6>
+          <h3 id="agentsOffline" class="text-secondary mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Avg Health</h6>
+          <h3 id="agentsAvgHealth" class="text-warning mb-0">0%</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <input type="text" id="agentSearchInput" class="form-control form-control-sm" placeholder="Search agents..." style="width: 300px; display: inline-block;">
+        </div>
+        <div>
+          <select id="agentStatusFilter" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+            <option value="all">All Status</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+            <option value="warning">Warning</option>
+          </select>
+        </div>
+      </div>
+      <div id="agentList" class="row">
+        <!-- Agent cards will be inserted here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Signatures -->
+  <section id="view-signatures" class="view-section hidden">
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h4 class="mb-0"><i class="bi bi-fingerprint"></i> Signature Management & Rules Engine</h4>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-success" id="btnImportSig">
+            <i class="bi bi-upload"></i> Import
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnExportSig">
+            <i class="bi bi-download"></i> Export
+          </button>
+          <button class="btn btn-sm btn-outline-warning" id="btnTestSig">
+            <i class="bi bi-play-circle"></i> Test Rule
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnAddSig">
+            <i class="bi bi-plus-circle"></i> Add Signature
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Total Signatures</h6>
+          <h3 id="signaturesTotal" class="text-info mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Active</h6>
+          <h3 id="signaturesActive" class="text-success mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Matches Today</h6>
+          <h3 id="signaturesMatches" class="text-warning mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">High Severity</h6>
+          <h3 id="signaturesHigh" class="text-danger mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center" id="matcherStatusCard">
+          <h6 class="text-muted mb-2">Signature Matcher</h6>
+          <div id="matcherStatus" class="mb-1">
+            <span class="badge bg-secondary" id="matcherStatusBadge">Checking...</span>
+          </div>
+          <small class="text-muted" id="matcherType">Loading...</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <input type="text" id="signatureSearchInput" class="form-control form-control-sm" placeholder="Search signatures..." style="width: 300px; display: inline-block;">
+        </div>
+        <div>
+          <select id="signatureSeverityFilter" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+            <option value="all">All Severities</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select id="signatureStatusFilter" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </div>
+    </div>
+    <div id="signatureList"></div>
+    </div>
+
+    <div class="card mt-3">
+      <h5><i class="bi bi-stars"></i> Auto‑Generated Signatures (ML & Third‑Party)</h5>
+      <div id="generatedSignaturesList">
+        <p class="text-muted text-center mb-0">No auto‑generated signatures yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Geo Map -->
+  <section id="view-map" class="view-section hidden">
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4><i class="bi bi-geo-alt-fill"></i> Geographic Threat Map</h4>
+        <button class="btn btn-sm btn-outline-info" id="btnRefreshGeo">
+          <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+      </div>
+      <div class="map-container" id="geoMapContainer">
+        <div class="text-center" id="geoMapContent">
+          <p class="mt-3">Loading geographic data...</p>
+        </div>
+      </div>
+      <div class="mt-3">
+        <h6>Top Regions by Threat Count</h6>
+        <div id="geoStats" class="row">
+          <!-- Geographic stats will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Device Management -->
+  <section id="view-devices" class="view-section hidden">
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h4 class="mb-0"><i class="bi bi-laptop"></i> Advanced Device Management</h4>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-warning" id="btnBulkDeviceAction">
+            <i class="bi bi-list-check"></i> Bulk Actions
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnExportDevices">
+            <i class="bi bi-download"></i> Export
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnRefreshDevices">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Connected Devices</h6>
+          <h3 id="devicesTotal" class="text-info mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Active Connections</h6>
+          <h3 id="devicesConnections" class="text-success mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Blocked IPs</h6>
+          <h3 id="devicesBlocked" class="text-danger mb-0">0</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Total Events</h6>
+          <h3 id="devicesEvents" class="text-warning mb-0">0</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <input type="text" id="deviceSearchInput" class="form-control form-control-sm" placeholder="Search devices..." style="width: 300px; display: inline-block;">
+        </div>
+        <div>
+          <select id="deviceStatusFilter" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+            <option value="all">All Status</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+          </select>
+        </div>
+      </div>
+      <div id="deviceList" class="row">
+        <!-- Device cards will be inserted here -->
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <h5><i class="bi bi-speedometer2"></i> Device Performance Metrics</h5>
+      <div class="table-responsive">
+        <table class="table table-dark table-hover">
+          <thead>
+            <tr>
+              <th>Agent ID</th>
+              <th>Total Events</th>
+              <th>Alerts</th>
+              <th>Avg Bytes/Event</th>
+              <th>Unique Destinations</th>
+              <th>Health Score</th>
+            </tr>
+          </thead>
+          <tbody id="devicesPerformanceList">
+            <tr><td colspan="6" class="text-center text-muted">Loading performance data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Export -->
+  <section id="view-export" class="view-section hidden">
+    <div class="card">
+      <h4><i class="bi bi-download"></i> Data Export</h4>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <h5>Export Options</h5>
+            <div class="d-flex flex-column gap-3">
+              <button class="btn btn-info" id="btnExportJSON">
+                <i class="bi bi-filetype-json"></i> Export as JSON
+              </button>
+              <button class="btn btn-info" id="btnExportAlerts">
+                <i class="bi bi-exclamation-triangle"></i> Export Alerts Only
+              </button>
+              <button class="btn btn-info" id="btnExportCSV">
+                <i class="bi bi-filetype-csv"></i> Export as CSV
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card">
+            <h5>Export Statistics</h5>
+            <div id="exportStats">
+              <p>Total Events: <strong id="exportTotalEvents">0</strong></p>
+              <p>Total Alerts: <strong id="exportTotalAlerts">0</strong></p>
+              <p>Date Range: <strong id="exportDateRange">N/A</strong></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Connection Monitoring -->
+  <section id="view-connections" class="view-section hidden">
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h4 class="mb-0"><i class="bi bi-diagram-3"></i> Real-Time Connection Monitoring</h4>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-info" id="btnRefreshConnections">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Connection Health</h6>
+          <h3 id="connectionHealthScore" class="text-success mb-0">100%</h3>
+          <small class="text-muted"><span id="connectionHealthIndicator" class="badge bg-success">Healthy</span></small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Unique Connections</h6>
+          <h3 id="totalUniqueConnections" class="text-info mb-0">0</h3>
+          <small class="text-muted">Last hour</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Suspicious Connections</h6>
+          <h3 id="suspiciousConnections" class="text-danger mb-0">0</h3>
+          <small class="text-muted">Flagged</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center">
+          <h6 class="text-muted mb-2">Predicted Alerts</h6>
+          <h3 id="predictedAlerts" class="text-warning mb-0">0</h3>
+          <small class="text-muted">Confidence: <span id="predictionConfidence">0%</span></small>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <div class="card">
+          <h5><i class="bi bi-activity"></i> Threat Timeline</h5>
+          <canvas id="connectionsTimelineChart" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <h5><i class="bi bi-list-ul"></i> Active Connections</h5>
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-dark table-sm table-hover">
+              <thead>
+                <tr>
+                  <th>Agent</th>
+                  <th>Source IP</th>
+                  <th>Dest IP</th>
+                  <th>Protocol</th>
+                  <th>Port</th>
+                  <th>Bytes</th>
+                  <th>Packets</th>
+                  <th>Last Seen</th>
+                </tr>
+              </thead>
+              <tbody id="activeConnectionsList">
+                <tr><td colspan="8" class="text-center text-muted">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <h5><i class="bi bi-shield-exclamation"></i> Correlated Threats</h5>
+          <div id="correlatedThreatsList" style="max-height: 400px; overflow-y: auto;">
+            <p class="text-muted text-center">Loading...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col-md-12">
+        <div class="card">
+          <h5><i class="bi bi-diagram-3-fill"></i> Connection Flow Diagram</h5>
+          <div id="connectionFlowDiagram" style="height: 400px; background: rgba(15, 22, 36, 0.7); border-radius: 8px; position: relative; overflow: hidden;">
+            <svg id="flowSvg" width="100%" height="100%"></svg>
+            <div class="text-center text-muted p-5">
+              <i class="bi bi-diagram-3" style="font-size: 48px; opacity: 0.3;"></i>
+              <p class="mt-2">Connection flow visualization will appear here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Automation & Response Rules -->
+  <section id="view-automation" class="view-section hidden">
+    <div class="card mb-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h4 class="mb-0"><i class="bi bi-robot"></i> Automated Response Rules Engine</h4>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-success" id="btnAddAutomationRule">
+            <i class="bi bi-plus-circle"></i> New Rule
+          </button>
+          <button class="btn btn-sm btn-outline-info" id="btnRefreshAutomation">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <div class="card">
+          <h5><i class="bi bi-list-check"></i> Active Automation Rules</h5>
+          <div class="table-responsive">
+            <table class="table table-dark table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Rule Name</th>
+                  <th>Condition</th>
+                  <th>Action</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="automationRulesList">
+                <tr><td colspan="7" class="text-center text-muted">Loading automation rules...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <h5><i class="bi bi-info-circle"></i> Rule Statistics</h5>
+          <div id="automationStats" class="p-3">
+            <p>Total Rules: <strong id="totalRules">0</strong></p>
+            <p>Active Rules: <strong id="activeRules">0</strong></p>
+            <p>Executed Today: <strong id="executedToday">0</strong></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <h5><i class="bi bi-lightning-charge"></i> Recent Executions</h5>
+          <div id="recentExecutions" style="max-height: 300px; overflow-y: auto;">
+            <p class="text-muted text-center">No recent executions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Alert Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 2000;">
+  <div id="alertToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>
+      <strong class="me-auto">Malicious Traffic Detected</strong>
+      <small id="toastAgent"></small>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+    </div>
+    <div class="toast-body" id="toastBody"></div>
+  </div>
+</div>
+
+<!-- Event Details Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-info-circle"></i> Event Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="eventDetails" style="white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 12px; padding: 16px; max-height: 500px; overflow-y: auto;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Device Management Modal -->
+<div class="modal fade" id="deviceModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-laptop"></i> Device Actions</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="deviceInfo" class="mb-3"></div>
+        <div class="d-grid gap-2">
+          <button class="btn btn-info" id="btnSendNotification">
+            <i class="bi bi-bell"></i> Send Notification
+          </button>
+          <button class="btn btn-warning" id="btnDropConnection">
+            <i class="bi bi-x-circle"></i> Drop Connection
+          </button>
+          <button class="btn btn-secondary" id="btnRestartCapture">
+            <i class="bi bi-arrow-clockwise"></i> Restart Capture
+          </button>
+          <button class="btn btn-danger" id="btnBlockIP">
+            <i class="bi bi-shield-exclamation"></i> Block IP Address
+          </button>
+          <button class="btn btn-outline-info" id="btnViewConnections">
+            <i class="bi bi-diagram-3"></i> View Active Connections
+          </button>
+          <button class="btn btn-outline-warning" id="btnUpdateConfig">
+            <i class="bi bi-gear"></i> Update Configuration
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-bell"></i> Send Notification</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="notificationForm">
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" id="notifTitle" class="form-control" value="QuantumDefender Alert" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea id="notifMessage" class="form-control" rows="3" required placeholder="Enter notification message"></textarea>
+          </div>
+          <button class="btn btn-info w-100" type="submit">
+            <i class="bi bi-send"></i> Send Notification
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drop Connection Modal -->
+<div class="modal fade" id="dropConnectionModal" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-x-circle"></i> Drop Connection</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="dropConnectionForm">
+          <div class="mb-3">
+            <label class="form-label">Target Type</label>
+            <select id="dropType" class="form-select">
+              <option value="ip" selected>IP Address</option>
+              <option value="domain">Domain Name</option>
+              <option value="cidr">CIDR / Subnet</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" id="dropLabel">Target IP Address</label>
+            <input type="text" id="dropIP" class="form-control" placeholder="192.168.1.100" required>
+            <small class="form-text text-muted" id="dropHint">Enter IP address (e.g., 192.168.1.100)</small>
+          </div>
+          <div class="mb-3" id="dropDomainWrapper" style="display:none;">
+            <label class="form-label">Target Domain Name</label>
+            <input type="text" id="dropDomain" class="form-control" placeholder="example.com">
+            <small class="form-text text-muted">Enter domain name (e.g., example.com)</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Port (Optional)</label>
+            <input type="number" id="dropPort" class="form-control" placeholder="Leave empty for all ports" min="1" max="65535">
+          </div>
+          <button class="btn btn-warning w-100" type="submit">
+            <i class="bi bi-x-circle"></i> Drop Connection
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Block IP/Domain/CIDR Modal -->
+<div class="modal fade" id="blockIPModal" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-shield-exclamation"></i> Block IP/Domain/CIDR</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="blockIPForm">
+          <div class="mb-3">
+            <label class="form-label">Block Type</label>
+            <select id="blockType" class="form-select" required>
+              <option value="ip">IP Address</option>
+              <option value="domain">Domain Name</option>
+              <option value="cidr">CIDR/Subnet (e.g., 192.168.1.0/24)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" id="blockLabel">IP Address to Block</label>
+            <input type="text" id="blockIP" class="form-control" placeholder="192.168.1.100" required>
+            <small class="form-text text-muted" id="blockHint">Enter IP address (e.g., 192.168.1.100)</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reason</label>
+            <textarea id="blockReason" class="form-control" rows="2" placeholder="Reason for blocking"></textarea>
+          </div>
+          <button class="btn btn-danger w-100" type="submit">
+            <i class="bi bi-shield-exclamation"></i> Block
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Signature Modal -->
+<div class="modal fade" id="sigModal" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add New Signature</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="sigForm">
+          <div class="mb-3">
+            <label class="form-label">Signature Name</label>
+            <input type="text" id="sigName" class="form-control" required placeholder="e.g., SQL Injection Pattern">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Pattern / Rule</label>
+            <textarea id="sigRule" class="form-control" rows="4" required placeholder="Enter regex pattern or rule expression"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Severity</label>
+            <select id="sigSeverity" class="form-select">
+              <option>Low</option>
+              <option>Medium</option>
+              <option selected>High</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Type</label>
+            <select id="sigType" class="form-select">
+              <option>url</option>
+              <option>payload</option>
+              <option>header</option>
+              <option>ip</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="sigEnabled" checked>
+              <label class="form-check-label" for="sigEnabled">Enabled</label>
+            </div>
+          </div>
+          <button class="btn btn-info w-100" type="submit">
+            <i class="bi bi-save"></i> Save Signature
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Check Threat IP Modal -->
+<div class="modal fade" id="checkThreatModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-search"></i> Threat Intelligence Lookup</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="checkThreatForm">
+          <div class="mb-3">
+            <label class="form-label">IP Address or URL</label>
+            <input type="text" id="threatLookupInput" class="form-control" required placeholder="e.g., 192.168.1.1 or example.com">
+          </div>
+          <button class="btn btn-info w-100" type="submit">
+            <i class="bi bi-search"></i> Check Threat
+          </button>
+        </form>
+        <div id="threatLookupResult" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Test Signature Rule Modal -->
+<div class="modal fade" id="testSigModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-play-circle"></i> Test Signature Rule</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="testSigForm">
+          <div class="mb-3">
+            <label class="form-label">Rule Pattern</label>
+            <textarea id="testSigRule" class="form-control" rows="3" required placeholder="Enter regex pattern or rule"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Test Data</label>
+            <textarea id="testSigData" class="form-control" rows="5" required placeholder="Enter sample data to test against the rule"></textarea>
+          </div>
+          <button class="btn btn-info w-100" type="submit">
+            <i class="bi bi-play-circle"></i> Test Rule
+          </button>
+        </form>
+        <div id="testSigResult" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionModal" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-list-check"></i> Bulk Actions</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Action</label>
+          <select id="bulkActionType" class="form-select">
+            <option value="block_ip">Block IPs</option>
+            <option value="send_notification">Send Notification</option>
+            <option value="restart_capture">Restart Capture</option>
+            <option value="update_config">Update Config</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Target Items (one per line)</label>
+          <textarea id="bulkActionItems" class="form-control" rows="5" placeholder="Enter items (IPs, agent IDs, etc.)"></textarea>
+        </div>
+        <button class="btn btn-warning w-100" id="btnExecuteBulkAction">
+          <i class="bi bi-play-fill"></i> Execute Bulk Action
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Agent Detail Modal -->
+<div class="modal fade" id="agentDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-cpu-fill"></i> Agent Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="agentDetailContent">
+          <p class="text-muted text-center">Loading agent details...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Automation Rule Modal -->
+<div class="modal fade" id="automationRuleModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-robot"></i> Create Automation Rule</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="automationRuleForm">
+          <div class="mb-3">
+            <label class="form-label">Rule Name</label>
+            <input type="text" id="ruleName" class="form-control" placeholder="e.g., Auto-block high-risk IPs" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Condition Type</label>
+            <select id="ruleConditionType" class="form-select" required>
+              <option value="alert_count">Alert Count Threshold</option>
+              <option value="threat_score">Threat Score Threshold</option>
+              <option value="ip_reputation">IP Reputation</option>
+              <option value="correlated_threat">Correlated Threat</option>
+              <option value="custom">Custom Condition</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Condition Value</label>
+            <input type="text" id="ruleConditionValue" class="form-control" placeholder="e.g., 5 (for alert count)" required>
+            <small class="form-text text-muted">Enter threshold value or condition</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Action</label>
+            <select id="ruleAction" class="form-select" required>
+              <option value="block_ip">Block IP Address</option>
+              <option value="block_domain">Block Domain</option>
+              <option value="drop_connection">Drop Connection</option>
+              <option value="send_notification">Send Notification</option>
+              <option value="quarantine_device">Quarantine Device</option>
+              <option value="custom">Custom Action</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Action Parameters (JSON)</label>
+            <textarea id="ruleActionParams" class="form-control" rows="3" placeholder='{"ip": "target_ip", "reason": "Automated block"}'></textarea>
+            <small class="form-text text-muted">Optional: JSON parameters for the action</small>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" id="ruleEnabled" class="form-check-input" checked>
+            <label class="form-check-label" for="ruleEnabled">Enable Rule Immediately</label>
+          </div>
+          <button class="btn btn-success w-100" type="submit">
+            <i class="bi bi-check-circle"></i> Create Rule
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Correlated Threat Alert Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 2100;">
+  <div id="correlatedThreatToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header bg-danger text-white">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong class="me-auto">Correlated Threat Detected</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+    </div>
+    <div class="toast-body" id="correlatedThreatBody">
+      <p class="mb-1"><strong>IP:</strong> <code id="correlatedThreatIP"></code></p>
+      <p class="mb-1"><strong>Affected Agents:</strong> <span id="correlatedThreatAgents"></span></p>
+      <p class="mb-0"><strong>Event Count:</strong> <span id="correlatedThreatCount"></span></p>
+      <div class="mt-2">
+        <button class="btn btn-sm btn-danger" id="btnBlockCorrelatedThreat">
+          <i class="bi bi-shield-exclamation"></i> Block IP
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

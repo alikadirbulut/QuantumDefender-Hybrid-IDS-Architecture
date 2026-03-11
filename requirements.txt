@@ -1,0 +1,8 @@
+pydivert
+PySide6
+requests
+psutil
+qdarktheme
+winotify
+pyahocorasick>=2.0.0
+pydantic>=2.0.0

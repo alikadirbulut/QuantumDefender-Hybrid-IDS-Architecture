@@ -1,0 +1,28 @@
+{
+  "signatures": [
+    {
+      "id": 1,
+      "type": "host_contains",
+      "pattern": "malicious.com",
+      "description": "Known malicious host"
+    },
+    {
+      "id": 2,
+      "type": "payload_contains",
+      "pattern": "bad_payload",
+      "description": "Known bad payload marker"
+    },
+    {
+      "id": 3,
+      "type": "ip_equal",
+      "pattern": "192.168.1.9",
+      "description": "Blacklisted IP"
+    },
+    {
+      "description": "auto-generated from cloud",
+      "id": 969,
+      "pattern": "sneaky-attack.example",
+      "type": "host_contains"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+2025-10-18 03:36:14,343 [INFO] QuantumDefender Agent v3.4 started.
+2025-10-18 03:36:16,559 [ERROR] Capture error: [WinError 87] The parameter is incorrect.
+2025-10-18 03:36:16,559 [INFO] Capture stopped.
+2025-10-18 03:36:17,734 [ERROR] Capture error: [WinError 87] The parameter is incorrect.
+2025-10-18 03:36:17,734 [INFO] Capture stopped.
+2025-10-18 03:36:18,148 [ERROR] Capture error: [WinError 87] The parameter is incorrect.
+2025-10-18 03:36:18,149 [INFO] Capture stopped.
+2025-10-18 03:36:18,320 [ERROR] Capture error: [WinError 87] The parameter is incorrect.
+2025-10-18 03:36:18,321 [INFO] Capture stopped.
+2025-10-18 03:36:18,416 [ERROR] Capture error: [WinError 87] The parameter is incorrect.
+2025-10-18 03:36:18,416 [INFO] Capture stopped.
+2025-10-18 03:37:00,595 [INFO] QuantumDefender Agent v3.4 started.
+2025-10-18 03:37:03,643 [INFO] Sent 2 events.
+2025-10-18 03:37:07,104 [INFO] Sent 1 events.
+2025-10-18 03:37:10,825 [INFO] Sent 2 events.
+2025-10-18 03:37:12,910 [INFO] Sent 15 events.
+2025-10-18 03:37:15,611 [INFO] Sent 3 events.
+2025-10-18 03:37:22,882 [INFO] Sent 1 events.
+2025-10-18 03:37:27,080 [INFO] Sent 2 events.
+2025-10-18 03:37:30,238 [INFO] Sent 8 events.
+2025-10-18 03:37:31,563 [INFO] Sent 20 events.
+2025-10-18 03:37:31,688 [INFO] Sent 20 events.
+2025-10-18 03:37:31,744 [INFO] Sent 20 events.
+2025-10-18 03:37:31,801 [INFO] Sent 20 events.
+2025-10-18 03:37:31,886 [INFO] Sent 20 events.
+2025-10-18 03:37:31,973 [INFO] Sent 20 events.
+2025-10-18 03:37:32,011 [INFO] Sent 20 events.
+2025-10-18 03:37:32,086 [INFO] Sent 20 events.
+2025-10-18 03:37:32,157 [INFO] Sent 20 events.
+2025-10-18 03:37:32,228 [INFO] Sent 20 events.
+2025-10-18 03:37:32,291 [INFO] Sent 20 events.
+2025-10-18 03:37:32,361 [INFO] Sent 20 events.
+2025-10-18 03:37:32,402 [INFO] Sent 20 events.
+2025-10-18 03:37:32,542 [INFO] Sent 20 events.
+2025-10-18 03:37:32,703 [INFO] Sent 20 events.
+2025-10-18 03:37:32,742 [INFO] Sent 20 events.
+2025-10-18 03:37:32,785 [INFO] Sent 20 events.
+2025-10-18 03:37:32,829 [INFO] Sent 20 events.
+2025-10-18 03:37:32,912 [INFO] Sent 20 events.
+2025-10-18 03:37:32,984 [INFO] Sent 20 events.
+2025-10-18 03:37:33,270 [INFO] Sent 20 events.
+2025-10-18 03:37:33,560 [INFO] Sent 20 events.
+2025-10-18 03:37:33,692 [INFO] Sent 20 events.
+2025-10-18 03:37:34,566 [INFO] Sent 20 events.
+2025-10-18 03:37:35,139 [INFO] Sent 20 events.
+2025-10-18 03:37:37,421 [INFO] Sent 19 events.
+2025-10-18 03:37:41,431 [INFO] Sent 2 events.
+2025-10-18 03:37:44,660 [INFO] Sent 5 events.
+2025-10-18 03:37:47,112 [INFO] Sent 1 events.
+2025-10-18 03:37:49,279 [INFO] Sent 2 events.
+2025-10-18 03:37:54,437 [WARNING] Queued 2 unsent events.
+2025-10-18 03:37:57,329 [WARNING] Queued 3 unsent events.
+2025-10-18 03:37:59,633 [INFO] Capture stopped.
+2025-10-18 03:38:00,472 [WARNING] Queued 8 unsent events.
+2025-10-18 03:39:35,677 [INFO] QuantumDefender Agent v3.4 started.
+2025-10-18 03:39:37,900 [INFO] Resent queued batch successfully.
+2025-10-18 03:39:37,925 [INFO] Resent queued batch successfully.
+2025-10-18 03:39:37,957 [INFO] Resent queued batch successfully.
+2025-10-18 03:39:38,857 [INFO] Sent 1 events.
+2025-10-18 03:39:43,021 [INFO] Sent 2 events.
+2025-10-18 03:39:47,094 [INFO] Sent 2 events.
+2025-10-18 03:39:53,114 [INFO] Sent 1 events.
+2025-10-18 03:39:59,175 [INFO] Sent 2 events.
+2025-10-18 03:40:01,167 [INFO] Sent 1 events.
+2025-10-18 03:40:03,240 [INFO] Sent 5 events.
+2025-10-18 03:40:06,176 [INFO] Sent 2 events.
+2025-10-18 03:40:11,373 [INFO] Sent 7 events.
+2025-10-18 03:40:14,280 [INFO] Sent 7 events.
+2025-10-18 03:40:23,059 [INFO] Sent 1 events.
+2025-10-18 03:40:26,494 [INFO] Sent 3 events.
+2025-10-18 03:40:28,686 [INFO] Sent 8 events.
+2025-10-18 03:40:30,862 [INFO] Sent 3 events.
+2025-10-18 03:40:33,255 [INFO] Sent 3 events.
+2025-10-18 03:40:35,336 [INFO] Sent 2 events.
+2025-10-18 03:40:38,209 [INFO] Sent 6 events.
+2025-10-18 03:40:43,226 [INFO] Sent 2 events.
+2025-10-18 03:40:46,466 [INFO] Sent 4 events.
+2025-10-18 03:40:48,755 [INFO] Sent 2 events.
+2025-10-18 03:40:53,105 [INFO] Sent 1 events.
+2025-10-18 03:41:03,102 [INFO] Sent 2 events.
+2025-10-18 03:41:11,534 [INFO] Sent 3 events.
+2025-10-18 03:41:13,917 [INFO] Sent 6 events.
+2025-10-18 03:41:16,098 [INFO] Sent 1 events.
+2025-10-18 03:41:23,117 [INFO] Sent 1 events.
+2025-10-18 03:41:28,209 [INFO] Sent 2 events.
+2025-10-18 03:41:33,143 [INFO] Sent 7 events.
+2025-10-18 03:41:36,217 [INFO] Capture stopped.
+2025-10-18 03:41:36,226 [INFO] Sent 1 events.
+2025-10-18 03:44:09,075 [INFO] Sent 1 events.
+2025-10-18 03:44:11,090 [INFO] Sent 13 events.
+2025-10-18 03:44:13,141 [INFO] Sent 4 events.
+2025-10-18 03:44:13,858 [INFO] Capture stopped.
+2025-10-18 03:44:13,889 [INFO] Sent 4 events.
