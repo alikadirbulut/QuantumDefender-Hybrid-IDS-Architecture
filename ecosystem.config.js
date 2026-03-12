@@ -15,7 +15,7 @@ module.exports = {
         "--error-logfile",  "logs/error.log",
         "mock_cloud:app"
       ],
-      cwd: "/home/<YOUR_USER>/quantum-defender",   // ← change to your actual path
+      cwd: "/home/akedon/quantum",   // ← change to your actual path
       env: {
         FLASK_ENV:           "production",
         QD_API_KEY:          "change-me-to-a-strong-secret",
